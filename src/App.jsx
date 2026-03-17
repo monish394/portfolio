@@ -8,13 +8,13 @@ import {
 import {
   SiJavascript, SiHtml5, SiReact, SiNodedotjs, SiExpress,
   SiMongodb, SiMongoose, SiTailwindcss, SiAxios, SiChartdotjs,
-  SiJsonwebtokens, SiPostman, SiVscodium, SiRedux,
+  SiJsonwebtokens, SiPostman, SiRedux,
   SiSocketdotio, SiCloudinary, SiGithub, SiLeaflet,
   SiOpenai, SiRazorpay, SiFramer, SiGreensock,
   SiRadixui, SiReacthookform, SiReactrouter, SiVite,
   SiGoogle, SiPython, SiMysql
 } from 'react-icons/si';
-import { TbApi, TbBrandReactNative, TbRoute, TbChartBar } from 'react-icons/tb';
+import { TbApi, TbBrandReactNative, TbRoute, TbChartBar, TbBrandVscode } from 'react-icons/tb';
 import { MdSecurity, MdVerified } from 'react-icons/md';
 import { FaFileUpload } from 'react-icons/fa';
 
@@ -108,7 +108,7 @@ const skillCategories = [
     skills: [
       { name: 'Git & GitHub', icon: <SiGithub color="#ffffff" /> },
       { name: 'Postman', icon: <SiPostman color="#ff6c37" /> },
-      { name: 'VS Code', icon: <SiVscodium color="#007acc" /> },
+      { name: 'VS Code', icon: <TbBrandVscode color="#007acc" /> },
       { name: 'Razorpay', icon: <SiRazorpay color="#3395ff" /> },
       { name: 'Cloudinary', icon: <SiCloudinary color="#3448c5" /> },
       { name: 'Google Gemini', icon: <SiOpenai color="#10b981" /> },
