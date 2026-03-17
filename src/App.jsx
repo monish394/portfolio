@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  FaGithub, FaLinkedin, FaEnvelope, FaPhone, FaMapMarkerAlt,
+  FaGithub, FaLinkedin, FaEnvelope, FaMapMarkerAlt,
   FaExternalLinkAlt, FaCode, FaServer, FaDatabase, FaShieldAlt,
   FaTools, FaGraduationCap, FaCertificate, FaGamepad, FaGlobe,
   FaLock, FaJava, FaCss3Alt, FaChevronUp, FaBars, FaTimes
@@ -10,10 +10,13 @@ import {
   SiMongodb, SiMongoose, SiTailwindcss, SiAxios, SiChartdotjs,
   SiJsonwebtokens, SiPostman, SiVscodium, SiRedux,
   SiSocketdotio, SiCloudinary, SiGithub, SiLeaflet,
-  SiOpenai, SiRazorpay
+  SiOpenai, SiRazorpay, SiFramer, SiGreensock,
+  SiRadixui, SiReacthookform, SiReactrouter, SiVite,
+  SiGoogle, SiPython, SiMysql
 } from 'react-icons/si';
-import { TbApi, TbBrandReactNative, TbRoute } from 'react-icons/tb';
+import { TbApi, TbBrandReactNative, TbRoute, TbChartBar } from 'react-icons/tb';
 import { MdSecurity, MdVerified } from 'react-icons/md';
+import { FaFileUpload } from 'react-icons/fa';
 
 // ─── Theme ───────────────────────────────────────────────────────────────────
 
@@ -44,6 +47,7 @@ const skillCategories = [
     skills: [
       { name: 'JavaScript (ES6+)', icon: <SiJavascript color="#f7df1e" /> },
       { name: 'Core Java', icon: <FaJava color="#f89820" /> },
+      { name: 'Python', icon: <SiPython color="#3776ab" /> },
     ],
   },
   {
@@ -58,7 +62,10 @@ const skillCategories = [
       { name: 'Redux / Context', icon: <SiRedux color="#764abc" /> },
       { name: 'Tailwind CSS', icon: <SiTailwindcss color="#38bdf8" /> },
       { name: 'Axios', icon: <SiAxios color="#5a29e4" /> },
-      { name: 'Chart.js', icon: <SiChartdotjs color="#ff6384" /> },
+      { name: 'Chart.js / Recharts', icon: <SiChartdotjs color="#ff6384" /> },
+      { name: 'React Hook Form', icon: <SiReacthookform color="#ec5990" /> },
+      { name: 'Framer Motion', icon: <SiFramer color="#00d8ff" /> },
+      { name: 'GSAP', icon: <SiGreensock color="#88ce02" /> },
       { name: 'Leaflet', icon: <SiLeaflet color="#199900" /> },
     ],
   },
@@ -81,6 +88,7 @@ const skillCategories = [
     skills: [
       { name: 'MongoDB', icon: <SiMongodb color="#47a248" /> },
       { name: 'Mongoose', icon: <SiMongoose color="#880000" /> },
+      { name: 'MySQL', icon: <SiMysql color="#4479a1" /> },
     ],
   },
   {
@@ -104,6 +112,9 @@ const skillCategories = [
       { name: 'Razorpay', icon: <SiRazorpay color="#3395ff" /> },
       { name: 'Cloudinary', icon: <SiCloudinary color="#3448c5" /> },
       { name: 'Google Gemini', icon: <SiOpenai color="#10b981" /> },
+      { name: 'Vite', icon: <SiVite color="#646cff" /> },
+      { name: 'Radix UI', icon: <SiRadixui color="#ffffff" /> },
+      { name: 'Multer', icon: <FaFileUpload color="#94a3b8" /> },
     ],
   },
 ];
@@ -282,6 +293,18 @@ const globalCSS = `
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
   }
+
+  /* Reveal on Scroll - Diagonal (Bottom-Left to Top-Right) */
+  .reveal {
+    opacity: 0;
+    transform: translate(-20px, 30px);
+    transition: all 2s cubic-bezier(0.2, 1, 0.3, 1);
+    will-change: transform, opacity;
+  }
+  .reveal.active {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
 `;
 
 function InjectStyles() {
@@ -312,10 +335,33 @@ function useHover() {
 
 // ─── Helper: Section Wrapper ─────────────────────────────────────────────────
 
-function Section({ id, children, style: extraStyle }) {
+function Section({ id, children, style: extraStyle, noReveal }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useState(null); // Just a placeholder for the logic below
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    const el = document.getElementById(id);
+    if (el && !noReveal) observer.observe(el);
+
+    return () => {
+      if (el) observer.unobserve(el);
+    };
+  }, [id, noReveal]);
+
   return (
     <section
       id={id}
+      className={!noReveal ? `reveal ${isVisible ? 'active' : ''}` : ''}
       style={{
         padding: '100px 0',
         position: 'relative',
@@ -1061,7 +1107,7 @@ function SkillCategoryCard({ cat }) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: 'auto' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
         {cat.skills.map((s) => (
           <SkillChip key={s.name} skill={s} />
         ))}
@@ -2056,7 +2102,7 @@ function ScrollToTop() {
   }, []);
 
   if (!visible) return null;
-
+//made changes
   return (
     <button
       {...bind}
