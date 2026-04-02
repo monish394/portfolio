@@ -1623,7 +1623,7 @@ function Education() {
               }}
             >
               {[
-                "Built 3+ production-grade full-stack projects",
+                "Built 4+ production-grade full-stack projects",
                 "Implemented real-time features with Socket.IO",
                 "Integrated AI, payments & geolocation APIs",
                 "Practiced agile development & Git workflows",
