@@ -97,6 +97,7 @@ const skillCategories = [
     color: '#ec4899',
     skills: [
       { name: 'JWT', icon: <SiJsonwebtokens color="#d63aff" /> },
+      { name: 'Google OAuth', icon: <SiGoogle color="#4285f4" /> },
       { name: 'RBAC', icon: <MdVerified color="#ec4899" /> },
       { name: 'Bcrypt.js', icon: <FaLock color="#ef4444" /> },
     ],
@@ -120,6 +121,16 @@ const skillCategories = [
 ];
 
 const projects = [
+  {
+    title: 'Scheduling-Platform',
+    description:
+      'A high-performance, full-stack scheduling solution that enables users to manage availability and automate meeting bookings. Built with the MERN stack and React 19, it features a dynamic dashboard with real-time stats, cinematic data visualizations, and seamless Google OAuth integration for a premium, user-centric experience.',
+    stack: ['MERN Stack', 'React 19', 'Node.js', 'Express.js', 'MongoDB', 'Google OAuth'],
+    github: 'https://github.com/monish394/Scheduling-Platform',
+    live: 'https://scheduling-platform-management.onrender.com/',
+    color: '#06b6d4',
+    badge: '🚀 New',
+  },
   {
     title: 'Asset Maintenance & Service Tracking System',
     description:
@@ -662,7 +673,7 @@ function Hero() {
         >
           Monishkumar <span style={{ color: theme.accent }}>AR</span>
         </h1>
-      
+
 
         {/* Role */}
         <p
@@ -743,7 +754,7 @@ function Hero() {
           className="stats-grid"
         >
           {[
-            { value: '3+', label: 'Projects Built' },
+            { value: '4+', label: 'Projects Built' },
             { value: 'MERN', label: 'Tech Stack' },
             { value: '7 mo', label: 'Pro Training' },
           ].map(({ value, label }) => (
@@ -2102,7 +2113,7 @@ function ScrollToTop() {
   }, []);
 
   if (!visible) return null;
-//made changes
+  //made changes
   return (
     <button
       {...bind}
