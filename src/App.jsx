@@ -173,7 +173,8 @@ const styles = {
     border: `1px solid ${theme.border}`,
     borderRadius: '16px',
     backdropFilter: 'blur(12px)',
-    transition: 'all 0.3s ease',
+    transition: 'all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+    WebkitBackdropFilter: 'blur(12px)',
   },
   glassCardHover: {
     background: theme.bgCardHover,
@@ -214,9 +215,11 @@ const styles = {
     border: 'none',
     cursor: 'pointer',
     textDecoration: 'none',
-    transition: 'all 0.3s ease',
+    transition: 'all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
     boxShadow: '0 4px 20px rgba(99,102,241,0.3)',
     letterSpacing: '0.01em',
+    position: 'relative',
+    overflow: 'hidden',
   },
   btnSecondary: {
     display: 'inline-flex',
@@ -231,8 +234,9 @@ const styles = {
     border: `1px solid ${theme.border}`,
     cursor: 'pointer',
     textDecoration: 'none',
-    transition: 'all 0.3s ease',
+    transition: 'all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
     letterSpacing: '0.01em',
+    position: 'relative',
   },
   tag: {
     display: 'inline-flex',
@@ -263,24 +267,9 @@ const styles = {
   },
 };
 
-// ─── Inject Global Styles & Keyframes ────────────────────────────────────────
+// ─── Inject Professional Global Styles ──────────────────────────────────────
 
 const globalCSS = `
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: ${theme.bg};
-    color: ${theme.textPrimary};
-    -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
-  }
-  ::selection { background: rgba(99,102,241,0.3); color: #fff; }
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: ${theme.bg}; }
-  ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 10px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.5); }
-
   @keyframes float {
     0%, 100% { transform: translateY(0) scale(1); }
     50% { transform: translateY(-20px) scale(1.02); }
@@ -299,17 +288,12 @@ const globalCSS = `
     51% { transform: scaleY(1); transform-origin: bottom; }
     100% { transform: scaleY(0); transform-origin: bottom; }
   }
-  @keyframes gradient-shift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
 
-  /* Reveal on Scroll - Diagonal (Bottom-Left to Top-Right) */
+  /* Reveal on Scroll - Smooth & Professional */
   .reveal {
     opacity: 0;
     transform: translate(-20px, 30px);
-    transition: all 2s cubic-bezier(0.2, 1, 0.3, 1);
+    transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     will-change: transform, opacity;
   }
   .reveal.active {
@@ -348,7 +332,7 @@ function useHover() {
 
 function Section({ id, children, style: extraStyle, noReveal }) {
   const [isVisible, setIsVisible] = useState(false);
-  const sectionRef = useState(null); // Just a placeholder for the logic below
+
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -412,15 +396,18 @@ function Navbar() {
 
   return (
     <nav
+      role="navigation"
+      aria-label="Main navigation"
       style={{
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         zIndex: 1000,
-        transition: 'all 0.35s ease',
-        background: scrolled ? 'rgba(10,11,15,0.88)' : 'transparent',
+        transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        background: scrolled ? 'rgba(10,11,15,0.92)' : 'transparent',
         backdropFilter: scrolled ? 'blur(24px) saturate(180%)' : 'none',
+        WebkitBackdropFilter: scrolled ? 'blur(24px) saturate(180%)' : 'none',
         borderBottom: scrolled ? `1px solid ${theme.border}` : '1px solid transparent',
       }}
     >
@@ -433,13 +420,18 @@ function Navbar() {
           padding: '16px 24px',
         }}
       >
-        <a href="#hero" style={{ textDecoration: 'none', fontWeight: 900, fontSize: '22px' }}>
+        <a 
+          href="#hero" 
+          style={{ textDecoration: 'none', fontWeight: 900, fontSize: '22px' }}
+          aria-label="Monishkumar AR - Portfolio Home"
+        >
           <span style={styles.gradientText}>MK.</span>
         </a>
 
         {/* Desktop */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-          className="desktop-nav">
+          className="desktop-nav"
+          role="menubar">
           {navLinks.map((l) => {
             const isActive = activeSection === l.toLowerCase();
             return (
@@ -462,9 +454,12 @@ function Navbar() {
             cursor: 'pointer',
             padding: '8px',
             fontSize: '22px',
+            transition: 'all 0.3s ease',
+            transform: menuOpen ? 'scale(1.1)' : 'scale(1)',
           }}
           className="mobile-toggle"
-          aria-label="Toggle menu"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
         >
           {menuOpen ? <FaTimes /> : <FaBars />}
         </button>
@@ -481,12 +476,14 @@ function Navbar() {
           borderBottom: `1px solid ${theme.border}`,
         }}
         className="mobile-menu"
+        role="menu"
       >
         {navLinks.map((l) => (
           <a
             key={l}
             href={`#${l.toLowerCase()}`}
             onClick={() => setMenuOpen(false)}
+            role="menuitem"
             style={{
               display: 'block',
               padding: '12px 16px',
@@ -495,7 +492,7 @@ function Navbar() {
               fontWeight: 600,
               fontSize: '15px',
               borderRadius: '10px',
-              transition: 'all 0.2s ease',
+              transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = 'rgba(99,102,241,0.1)';
@@ -509,16 +506,7 @@ function Navbar() {
             {l}
           </a>
         ))}
-        <a
-          href="mailto:monish123ar@gmail.com"
-          style={{
-            ...styles.btnPrimary,
-            justifyContent: 'center',
-            marginTop: '8px',
-          }}
-        >
-          Hire Me
-        </a>
+     
       </div>
 
       {/* Responsive CSS for nav */}
@@ -541,6 +529,7 @@ function NavLink({ href, children, active }) {
     <a
       href={href}
       {...bind}
+      role="navigation"
       style={{
         textDecoration: 'none',
         padding: '8px 16px',
@@ -549,8 +538,10 @@ function NavLink({ href, children, active }) {
         fontWeight: 600,
         color: active ? theme.textPrimary : hovered ? theme.textPrimary : theme.textSecondary,
         background: active ? 'rgba(99,102,241,0.12)' : hovered ? 'rgba(255,255,255,0.05)' : 'transparent',
-        transition: 'all 0.25s ease',
+        transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         letterSpacing: '0.01em',
+        position: 'relative',
+        borderBottom: active ? '2px solid #6366f1' : '2px solid transparent',
       }}
     >
       {children}
@@ -720,7 +711,11 @@ function Hero() {
             target="_blank"
             rel="noopener noreferrer"
             baseStyle={styles.btnPrimary}
-            hoverStyle={{ transform: 'translateY(-2px)', boxShadow: '0 8px 30px rgba(99,102,241,0.4)' }}
+            hoverStyle={{ 
+              transform: 'translateY(-3px)', 
+              boxShadow: '0 12px 40px rgba(99,102,241,0.45)',
+              letterSpacing: '0.015em',
+            }}
           >
             <FaGithub size={16} /> View My Work
           </HoverButton>
@@ -729,14 +724,24 @@ function Hero() {
             target="_blank"
             rel="noopener noreferrer"
             baseStyle={styles.btnSecondary}
-            hoverStyle={{ borderColor: '#0077b5', color: '#0077b5', background: 'rgba(0,119,181,0.08)' }}
+            hoverStyle={{ 
+              borderColor: '#0077b5', 
+              color: '#0077b5', 
+              background: 'rgba(0,119,181,0.08)',
+              transform: 'translateY(-2px)',
+            }}
           >
             <FaLinkedin size={16} /> LinkedIn
           </HoverButton>
           <HoverButton
             href="mailto:monish123ar@gmail.com"
             baseStyle={styles.btnSecondary}
-            hoverStyle={{ borderColor: theme.accent, color: theme.accentLight, background: 'rgba(99,102,241,0.08)' }}
+            hoverStyle={{ 
+              borderColor: theme.accent, 
+              color: theme.accentLight, 
+              background: 'rgba(99,102,241,0.08)',
+              transform: 'translateY(-2px)',
+            }}
           >
             <FaEnvelope size={16} /> Email Me
           </HoverButton>
@@ -828,7 +833,18 @@ function HoverButton({ children, baseStyle, hoverStyle, ...props }) {
     <a
       {...props}
       {...bind}
-      style={{ ...baseStyle, ...(hovered ? hoverStyle : {}) }}
+      role="button"
+      tabIndex={0}
+      style={{ 
+        ...baseStyle, 
+        ...(hovered ? hoverStyle : {}),
+        cursor: 'pointer',
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.currentTarget.click();
+        }
+      }}
     >
       {children}
     </a>
@@ -1081,9 +1097,27 @@ function SkillCategoryCard({ cat }) {
         flexDirection: 'column',
         height: '100%',
         ...(hovered ? styles.glassCardHover : {}),
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' }}>
+      {/* Professional shine effect on hover */}
+      {hovered && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: '-100%',
+            width: '100%',
+            height: '100%',
+            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)',
+            animation: 'slideInRight 0.6s ease-out',
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px', position: 'relative', zIndex: 1 }}>
         <div
           style={{
             width: '40px',
@@ -1095,8 +1129,8 @@ function SkillCategoryCard({ cat }) {
             fontSize: '18px',
             background: `${cat.color}18`,
             color: cat.color,
-            transition: 'all 0.3s ease',
-            transform: hovered ? 'rotate(-5deg) scale(1.05)' : 'rotate(0)',
+            transition: 'all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+            transform: hovered ? 'rotate(-5deg) scale(1.1)' : 'rotate(0)',
           }}
         >
           {cat.icon}
@@ -1118,7 +1152,7 @@ function SkillCategoryCard({ cat }) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', position: 'relative', zIndex: 1 }}>
         {cat.skills.map((s) => (
           <SkillChip key={s.name} skill={s} />
         ))}
@@ -1132,14 +1166,17 @@ function SkillChip({ skill }) {
   return (
     <div
       {...bind}
+      role="img"
+      aria-label={`${skill.name} skill`}
       style={{
         ...styles.skillChip,
         ...(hovered
           ? {
-            background: 'rgba(255,255,255,0.08)',
-            borderColor: theme.borderHover,
+            background: 'rgba(99,102,241,0.08)',
+            borderColor: theme.accentLight,
             color: theme.textPrimary,
-            transform: 'translateY(-1px)',
+            transform: 'translateY(-2px)',
+            boxShadow: '0 4px 12px rgba(99,102,241,0.15)',
           }
           : {}),
       }}
@@ -1198,11 +1235,11 @@ function ProjectCard({ project: p, index: i }) {
         overflow: 'hidden',
         ...(hovered ? {
           ...styles.glassCardHover,
-          transform: 'translateY(-2px)',
+          transform: 'translateY(-4px)',
         } : {}),
       }}
     >
-      {/* Accent line */}
+      {/* Accent line with enhanced glow */}
       <div
         style={{
           position: 'absolute',
@@ -1212,11 +1249,12 @@ function ProjectCard({ project: p, index: i }) {
           height: '3px',
           background: `linear-gradient(90deg, ${p.color}, ${p.color}40, transparent)`,
           opacity: hovered ? 1 : 0.5,
-          transition: 'opacity 0.3s ease',
+          transition: 'opacity 0.4s ease',
+          boxShadow: hovered ? `0 0 12px ${p.color}80` : 'none',
         }}
       />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', position: 'relative', zIndex: 1 }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
@@ -1234,8 +1272,8 @@ function ProjectCard({ project: p, index: i }) {
                 background: `${p.color}12`,
                 border: `1px solid ${p.color}25`,
                 color: p.color,
-                transition: 'all 0.3s ease',
-                transform: hovered ? 'rotate(-3deg)' : 'rotate(0)',
+                transition: 'all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                transform: hovered ? 'rotate(-3deg) scale(1.08)' : 'rotate(0)',
               }}
             >
               {i + 1}
@@ -1278,6 +1316,7 @@ function ProjectCard({ project: p, index: i }) {
             color: theme.textSecondary,
             fontSize: '14px',
             lineHeight: 1.8,
+            letterSpacing: '0.005em',
           }}
         >
           {p.description}
@@ -1294,6 +1333,7 @@ function ProjectCard({ project: p, index: i }) {
                 border: `1px solid ${theme.border}`,
                 color: theme.textMuted,
                 fontSize: '11px',
+                transition: 'all 0.25s ease',
               }}
             >
               {tech}
@@ -1324,9 +1364,11 @@ function IconButton({ href, color, bg, borderColor, children }) {
         border: `1px solid ${borderColor || theme.border}`,
         color,
         textDecoration: 'none',
-        transition: 'all 0.25s ease',
-        transform: hovered ? 'scale(1.1)' : 'scale(1)',
+        transition: 'all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        transform: hovered ? 'scale(1.15) translateY(-2px)' : 'scale(1)',
+        boxShadow: hovered ? `0 6px 16px rgba(0,0,0,0.2)` : 'none',
       }}
+      aria-label="Project link"
     >
       {children}
     </a>
@@ -1959,9 +2001,10 @@ function ContactLink({ icon, label, value, href, color }) {
         padding: '16px',
         borderRadius: '14px',
         textDecoration: 'none',
-        transition: 'all 0.25s ease',
-        background: hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
+        transition: 'all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        background: hovered ? 'rgba(255,255,255,0.06)' : 'transparent',
         border: `1px solid ${hovered ? theme.borderHover : 'transparent'}`,
+        transform: hovered ? 'translateX(4px)' : 'translateX(0)',
       }}
     >
       <div
@@ -1975,8 +2018,8 @@ function ContactLink({ icon, label, value, href, color }) {
           flexShrink: 0,
           background: `${color}12`,
           color,
-          transition: 'all 0.25s ease',
-          transform: hovered ? 'scale(1.05)' : 'scale(1)',
+          transition: 'all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          transform: hovered ? 'scale(1.1) rotate(5deg)' : 'scale(1)',
         }}
       >
         {icon}
@@ -2012,9 +2055,9 @@ function ContactLink({ icon, label, value, href, color }) {
         style={{
           flexShrink: 0,
           color: theme.textMuted,
-          opacity: hovered ? 1 : 0,
-          transition: 'opacity 0.2s ease',
-          transform: hovered ? 'translate(2px, -2px)' : 'translate(0,0)',
+          opacity: hovered ? 1 : 0.5,
+          transition: 'all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          transform: hovered ? 'translate(3px, -3px)' : 'translate(0,0)',
         }}
       />
     </a>
@@ -2027,11 +2070,28 @@ function Footer() {
   return (
     <footer
       style={{
-        padding: '48px 0',
+        padding: '48px 0 32px',
         borderTop: `1px solid ${theme.border}`,
         background: `linear-gradient(180deg, transparent, rgba(10,11,15,0.8))`,
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
+      {/* Background accent */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          right: 0,
+          width: '200px',
+          height: '200px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(99,102,241,0.05), transparent 70%)',
+          pointerEvents: 'none',
+          filter: 'blur(40px)',
+        }}
+      />
+
       <div
         style={{
           ...styles.container,
@@ -2040,26 +2100,35 @@ function Footer() {
           alignItems: 'center',
           gap: '24px',
           textAlign: 'center',
+          position: 'relative',
+          zIndex: 1,
         }}
         className="footer-inner"
       >
-        <div>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '12px',
+          }}
+        >
           <p style={{ fontSize: '14px', fontWeight: 500, color: theme.textSecondary }}>
             © 2025{' '}
             <span style={{ ...styles.gradientText, fontWeight: 700 }}>Monishkumar AR</span>
           </p>
-          <p style={{ fontSize: '12px', color: theme.textMuted, marginTop: '6px' }}>
-            Built with React & crafted with care
+          <p style={{ fontSize: '12px', color: theme.textMuted, letterSpacing: '0.05em' }}>
+            Built with React • Crafted with attention to detail
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', justifyContent: 'center' }}>
           {[
-            { href: 'https://github.com/monish394', icon: <FaGithub size={20} /> },
-            { href: 'https://www.linkedin.com/in/armonishkumar78/', icon: <FaLinkedin size={20} /> },
-            { href: 'mailto:monish123ar@gmail.com', icon: <FaEnvelope size={20} /> },
-          ].map(({ href, icon }) => (
-            <FooterIcon key={href} href={href}>
+            { href: 'https://github.com/monish394', icon: <FaGithub size={20} />, label: 'GitHub' },
+            { href: 'https://www.linkedin.com/in/armonishkumar78/', icon: <FaLinkedin size={20} />, label: 'LinkedIn' },
+            { href: 'mailto:monish123ar@gmail.com', icon: <FaEnvelope size={20} />, label: 'Email' },
+          ].map(({ href, icon, label }) => (
+            <FooterIcon key={href} href={href} label={label}>
               {icon}
             </FooterIcon>
           ))}
@@ -2079,7 +2148,7 @@ function Footer() {
   );
 }
 
-function FooterIcon({ href, children }) {
+function FooterIcon({ href, label, children }) {
   const { hovered, bind } = useHover();
   return (
     <a
@@ -2087,12 +2156,16 @@ function FooterIcon({ href, children }) {
       target="_blank"
       rel="noopener noreferrer"
       {...bind}
+      aria-label={label}
+      title={label}
       style={{
         color: hovered ? theme.accentLight : theme.textMuted,
         textDecoration: 'none',
-        transition: 'all 0.3s ease',
-        transform: hovered ? 'translateY(-2px) scale(1.15)' : 'translateY(0) scale(1)',
+        transition: 'all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        transform: hovered ? 'translateY(-3px) scale(1.2)' : 'translateY(0) scale(1)',
         display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}
     >
       {children}
