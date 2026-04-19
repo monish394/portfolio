@@ -754,13 +754,13 @@ const STATIC_STARS = Array.from({ length: 150 }).map(() => ({
 
 const CometShower = () => {
   const comets = [
-    { top: '-10%', left: '110%', delay: '0s', duration: '3s' },
-    { top: '20%', left: '120%', delay: '0.8s', duration: '4s' },
-    { top: '-20%', left: '80%', delay: '1.5s', duration: '3.5s' },
-    { top: '40%', left: '130%', delay: '0.5s', duration: '2.5s' },
-    { top: '-5%', left: '100%', delay: '2.2s', duration: '3.2s' },
-    { top: '10%', left: '140%', delay: '3.1s', duration: '2.8s' },
-    { top: '30%', left: '150%', delay: '1.2s', duration: '3.7s' },
+    { top: '-10%', left: '110%', delay: '0s',   duration: '10s' },
+    { top: '20%',  left: '120%', delay: '2s',   duration: '13s' },
+    { top: '-20%', left: '80%',  delay: '5s',   duration: '11s' },
+    { top: '40%',  left: '130%', delay: '1.5s', duration: '8s'  },
+    { top: '-5%',  left: '100%', delay: '7s',   duration: '12s' },
+    { top: '10%',  left: '140%', delay: '9s',   duration: '9s'  },
+    { top: '30%',  left: '150%', delay: '3.5s', duration: '14s' },
   ];
 
   return (
