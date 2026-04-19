@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   FaGithub, FaLinkedin, FaEnvelope, FaMapMarkerAlt,
   FaExternalLinkAlt, FaCode, FaServer, FaDatabase, FaShieldAlt,
@@ -180,6 +180,7 @@ const styles = {
     background: theme.bgCardHover,
     borderColor: theme.borderHover,
     boxShadow: theme.shadowHover,
+    transform: 'translateY(-6px) scale(1.02)',
   },
   sectionTitle: {
     fontSize: 'clamp(1.8rem, 4vw, 2.8rem)',
@@ -288,6 +289,73 @@ const globalCSS = `
     51% { transform: scaleY(1); transform-origin: bottom; }
     100% { transform: scaleY(0); transform-origin: bottom; }
   }
+  @keyframes animateComet {
+    0% {
+      transform: rotate(-35deg) translateX(0);
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(-35deg) translateX(-2000px);
+      opacity: 0;
+    }
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.1; transform: scale(0.6); }
+    50% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 8px rgba(182, 23, 23, 0.7); }
+  }
+
+  .star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle 3s infinite alternate ease-in-out;
+  }
+
+  .comet {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.1), 0 0 0 8px rgba(139,92,246,0.1), 0 0 20px rgba(255,255,255,1);
+    animation: animateComet 4s linear infinite;
+  }
+  .comet::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 250px;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.8), rgba(99,102,241,0.5), transparent);
+  }
+
+  .btn-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-shine::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transform: skewX(-20deg);
+    transition: left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .btn-shine:hover::after {
+    left: 150%;
+  }
+
+  @keyframes moveFloorGrid {
+    0% { transform: rotateX(75deg) translateZ(-50px) translateY(0); }
+    100% { transform: rotateX(75deg) translateZ(-50px) translateY(80px); }
+  }
 
   /* Reveal on Scroll - Smooth & Professional */
   .reveal {
@@ -329,6 +397,117 @@ function useHover() {
 }
 
 // ─── Helper: Section Wrapper ─────────────────────────────────────────────────
+
+function GlobalBg3D() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animId;
+    let offset = 0;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const draw = () => {
+      const W = canvas.width;
+      const H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const horizon = H * 0.45;
+      const vx = W / 2;
+      const COLS = 16;
+      const ROWS = 20;
+      const spacing = W / COLS;
+      offset = (offset + 0.5) % (H / ROWS);
+
+      ctx.lineWidth = 1;
+
+      // Vertical lines
+      for (let i = 0; i <= COLS; i++) {
+        const baseX = i * spacing;
+        const grad = ctx.createLinearGradient(vx, horizon, baseX, H);
+        grad.addColorStop(0, 'rgba(99,102,241,0)');
+        grad.addColorStop(0.3, 'rgba(139,92,246,0.25)');
+        grad.addColorStop(1, 'rgba(99,102,241,0.45)');
+        ctx.beginPath();
+        ctx.moveTo(vx, horizon);
+        ctx.lineTo(baseX, H);
+        ctx.strokeStyle = grad;
+        ctx.stroke();
+      }
+
+      // Horizontal lines
+      for (let j = 0; j <= ROWS; j++) {
+        const t = j / ROWS;
+        const y = horizon + offset + (H - horizon) * Math.pow(t, 1.6);
+        if (y > H) continue;
+        const alpha = 0.08 + 0.32 * t;
+        const progress = (y - horizon) / (H - horizon);
+        const lx = vx - vx * progress * 1.2;
+        const rx = vx + (W - vx) * progress * 1.2;
+        const grad = ctx.createLinearGradient(lx, y, rx, y);
+        grad.addColorStop(0, 'transparent');
+        grad.addColorStop(0.2, `rgba(139,92,246,${alpha})`);
+        grad.addColorStop(0.5, `rgba(99,102,241,${alpha})`);
+        grad.addColorStop(0.8, `rgba(139,92,246,${alpha})`);
+        grad.addColorStop(1, 'transparent');
+        ctx.beginPath();
+        ctx.moveTo(lx, y);
+        ctx.lineTo(rx, y);
+        ctx.strokeStyle = grad;
+        ctx.stroke();
+      }
+
+      // Glowing horizon line
+      const hGrad = ctx.createLinearGradient(0, horizon, W, horizon);
+      hGrad.addColorStop(0, 'transparent');
+      hGrad.addColorStop(0.3, 'rgba(139,92,246,0.5)');
+      hGrad.addColorStop(0.5, 'rgba(167,139,250,0.7)');
+      hGrad.addColorStop(0.7, 'rgba(139,92,246,0.5)');
+      hGrad.addColorStop(1, 'transparent');
+      ctx.beginPath();
+      ctx.moveTo(0, horizon);
+      ctx.lineTo(W, horizon);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = hGrad;
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = 'rgba(139,92,246,0.6)';
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      animId = requestAnimationFrame(draw);
+    };
+
+    draw();
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        pointerEvents: 'none',
+        zIndex: 0,
+        opacity: 0.5,
+      }}
+    />
+  );
+}
 
 function Section({ id, children, style: extraStyle, noReveal }) {
   const [isVisible, setIsVisible] = useState(false);
@@ -420,12 +599,12 @@ function Navbar() {
           padding: '16px 24px',
         }}
       >
-        <a 
-          href="#hero" 
-          style={{ textDecoration: 'none', fontWeight: 900, fontSize: '22px' }}
+        <a
+          href="#hero"
+          style={{ textDecoration: 'none', fontWeight: 900, fontSize: '20px', letterSpacing: '-0.02em' }}
           aria-label="Monishkumar AR - Portfolio Home"
         >
-          <span style={styles.gradientText}>MK.</span>
+          <span style={styles.gradientText}>Monishkumar A R</span>
         </a>
 
         {/* Desktop */}
@@ -506,7 +685,7 @@ function Navbar() {
             {l}
           </a>
         ))}
-     
+
       </div>
 
       {/* Responsive CSS for nav */}
@@ -548,6 +727,73 @@ function NavLink({ href, children, active }) {
     </a>
   );
 }
+
+// ─── Dynamic Helpers ─────────────────────────────────────────────────────────
+
+const getTrainingMonths = () => {
+  const startDate = new Date(2025, 6, 15); // Mid-July 2025
+  const now = new Date();
+  let months = (now.getFullYear() - startDate.getFullYear()) * 12;
+  months -= startDate.getMonth();
+  months += now.getMonth();
+  if (now.getDate() < startDate.getDate()) {
+    months--;
+  }
+  return months > 0 ? months : 0;
+};
+
+// ─── Sky Background (Stars + Comets) ─────────────────────────────────────────
+
+const STATIC_STARS = Array.from({ length: 150 }).map(() => ({
+  top: `${Math.random() * 100}%`,
+  left: `${Math.random() * 100}%`,
+  size: `${Math.random() * 2 + 1}px`,
+  delay: `${Math.random() * 5}s`,
+  duration: `${Math.random() * 3 + 2}s`
+}));
+
+const CometShower = () => {
+  const comets = [
+    { top: '-10%', left: '110%', delay: '0s', duration: '3s' },
+    { top: '20%', left: '120%', delay: '0.8s', duration: '4s' },
+    { top: '-20%', left: '80%', delay: '1.5s', duration: '3.5s' },
+    { top: '40%', left: '130%', delay: '0.5s', duration: '2.5s' },
+    { top: '-5%', left: '100%', delay: '2.2s', duration: '3.2s' },
+    { top: '10%', left: '140%', delay: '3.1s', duration: '2.8s' },
+    { top: '30%', left: '150%', delay: '1.2s', duration: '3.7s' },
+  ];
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 1 }}>
+      {STATIC_STARS.map((s, i) => (
+        <div
+          key={`star-${i}`}
+          className="star"
+          style={{
+            top: s.top,
+            left: s.left,
+            width: s.size,
+            height: s.size,
+            animationDelay: s.delay,
+            animationDuration: s.duration,
+          }}
+        />
+      ))}
+      {comets.map((c, i) => (
+        <div
+          key={`comet-${i}`}
+          className="comet"
+          style={{
+            top: c.top,
+            left: c.left,
+            animationDelay: c.delay,
+            animationDuration: c.duration,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
 
 // ─── Hero ────────────────────────────────────────────────────────────────────
 
@@ -610,6 +856,8 @@ function Hero() {
         }}
       />
 
+      <CometShower />
+
       <div
         style={{
           position: 'relative',
@@ -651,10 +899,9 @@ function Hero() {
           Available for Opportunities
         </div>
 
-        {/* Name */}
         <h1
           style={{
-            fontSize: 'clamp(2.8rem, 8vw, 5.5rem)',
+            fontSize: 'clamp(2.4rem, 6vw, 4.2rem)',
             fontWeight: 900,
             lineHeight: 1.05,
             color: theme.textPrimary,
@@ -662,7 +909,7 @@ function Hero() {
             letterSpacing: '-0.03em',
           }}
         >
-          Monishkumar <span style={{ color: theme.accent }}>AR</span>
+          Monishkumar <span style={{ color: theme.accent }}>A R</span>
         </h1>
 
 
@@ -711,8 +958,8 @@ function Hero() {
             target="_blank"
             rel="noopener noreferrer"
             baseStyle={styles.btnPrimary}
-            hoverStyle={{ 
-              transform: 'translateY(-3px)', 
+            hoverStyle={{
+              transform: 'translateY(-3px)',
               boxShadow: '0 12px 40px rgba(99,102,241,0.45)',
               letterSpacing: '0.015em',
             }}
@@ -724,9 +971,9 @@ function Hero() {
             target="_blank"
             rel="noopener noreferrer"
             baseStyle={styles.btnSecondary}
-            hoverStyle={{ 
-              borderColor: '#0077b5', 
-              color: '#0077b5', 
+            hoverStyle={{
+              borderColor: '#0077b5',
+              color: '#0077b5',
               background: 'rgba(0,119,181,0.08)',
               transform: 'translateY(-2px)',
             }}
@@ -736,9 +983,9 @@ function Hero() {
           <HoverButton
             href="mailto:monish123ar@gmail.com"
             baseStyle={styles.btnSecondary}
-            hoverStyle={{ 
-              borderColor: theme.accent, 
-              color: theme.accentLight, 
+            hoverStyle={{
+              borderColor: theme.accent,
+              color: theme.accentLight,
               background: 'rgba(99,102,241,0.08)',
               transform: 'translateY(-2px)',
             }}
@@ -761,7 +1008,7 @@ function Hero() {
           {[
             { value: '4+', label: 'Projects Built' },
             { value: 'MERN', label: 'Tech Stack' },
-            { value: '7 mo', label: 'Pro Training' },
+            { value: `${getTrainingMonths()} mo`, label: 'Pro Training' },
           ].map(({ value, label }) => (
             <StatCard key={label} value={value} label={label} />
           ))}
@@ -827,7 +1074,7 @@ function StatCard({ value, label }) {
   );
 }
 
-function HoverButton({ children, baseStyle, hoverStyle, ...props }) {
+function HoverButton({ children, baseStyle, hoverStyle, className = '', ...props }) {
   const { hovered, bind } = useHover();
   return (
     <a
@@ -835,8 +1082,9 @@ function HoverButton({ children, baseStyle, hoverStyle, ...props }) {
       {...bind}
       role="button"
       tabIndex={0}
-      style={{ 
-        ...baseStyle, 
+      className={`btn-shine ${className}`}
+      style={{
+        ...baseStyle,
         ...(hovered ? hoverStyle : {}),
         cursor: 'pointer',
       }}
@@ -903,7 +1151,7 @@ function About() {
             }}
           >
             Trained for{' '}
-            <strong style={{ color: theme.textPrimary }}>7 months at DCT Academy, Bangalore</strong> in
+            <strong style={{ color: theme.textPrimary }}>{getTrainingMonths()} months at DCT Academy, Bangalore</strong> in
             Java Full Stack development, I've built end-to-end systems featuring real-time communication,
             AI integrations, payment gateways, and geolocation services.
           </p>
@@ -1225,6 +1473,9 @@ function Projects() {
 
 function ProjectCard({ project: p, index: i }) {
   const { hovered, bind } = useHover();
+  const [showPreview, setShowPreview] = useState(false);
+  const [iframeLoading, setIframeLoading] = useState(true);
+
   return (
     <div
       {...bind}
@@ -1235,11 +1486,12 @@ function ProjectCard({ project: p, index: i }) {
         overflow: 'hidden',
         ...(hovered ? {
           ...styles.glassCardHover,
-          transform: 'translateY(-4px)',
+          transform: showPreview ? 'none' : 'translateY(-4px)',
         } : {}),
+        transition: 'all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       }}
     >
-      {/* Accent line with enhanced glow */}
+      {/* Accent line */}
       <div
         style={{
           position: 'absolute',
@@ -1297,8 +1549,29 @@ function ProjectCard({ project: p, index: i }) {
             </div>
           </div>
 
-          {/* Links */}
-          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+          {/* Links + Preview toggle */}
+          <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center', flexWrap: 'wrap' }}>
+            {p.live && (
+              <button
+                onClick={() => { setShowPreview(!showPreview); setIframeLoading(true); }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '7px 14px',
+                  borderRadius: '10px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  border: `1px solid ${p.color}40`,
+                  background: showPreview ? `${p.color}20` : 'transparent',
+                  color: p.color,
+                  transition: 'all 0.25s ease',
+                }}
+              >
+                {showPreview ? '✕ Close Preview' : '⬡ Live Preview'}
+              </button>
+            )}
             <IconButton href={p.github} color={theme.textSecondary}>
               <FaGithub size={18} />
             </IconButton>
@@ -1340,7 +1613,97 @@ function ProjectCard({ project: p, index: i }) {
             </span>
           ))}
         </div>
+
+        {/* Iframe Live Preview */}
+        {showPreview && p.live && (
+          <div
+            style={{
+              borderRadius: '12px',
+              overflow: 'hidden',
+              border: `1px solid ${p.color}30`,
+              boxShadow: `0 0 30px ${p.color}20`,
+              position: 'relative',
+              background: '#0a0b0f',
+            }}
+          >
+            {/* Browser chrome bar */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              background: 'rgba(255,255,255,0.04)',
+              borderBottom: `1px solid ${p.color}20`,
+            }}>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                {['#ff5f57','#febc2e','#28c840'].map(c => (
+                  <span key={c} style={{ width: '10px', height: '10px', borderRadius: '50%', background: c, display: 'inline-block' }} />
+                ))}
+              </div>
+              <div style={{
+                flex: 1,
+                marginLeft: '8px',
+                padding: '4px 12px',
+                borderRadius: '6px',
+                background: 'rgba(255,255,255,0.06)',
+                fontSize: '11px',
+                color: theme.textMuted,
+                fontFamily: 'monospace',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {p.live}
+              </div>
+            </div>
+
+            {/* Loading spinner */}
+            {iframeLoading && (
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                top: '37px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#0a0b0f',
+                gap: '12px',
+                zIndex: 2,
+              }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  border: `3px solid ${p.color}30`,
+                  borderTop: `3px solid ${p.color}`,
+                  borderRadius: '50%',
+                  animation: 'spin 0.9s linear infinite',
+                }} />
+                <span style={{ fontSize: '12px', color: theme.textMuted }}>Loading live preview…</span>
+              </div>
+            )}
+
+            <iframe
+              src={p.live}
+              title={`${p.title} Live Preview`}
+              onLoad={() => setIframeLoading(false)}
+              style={{
+                width: '100%',
+                height: '520px',
+                border: 'none',
+                display: 'block',
+              }}
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+            />
+          </div>
+        )}
       </div>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
@@ -1550,7 +1913,7 @@ function Education() {
                 display: "inline-block",
               }}
             >
-              July 2025 – March 2026 · 7 Months
+              July 2025 – Present · {getTrainingMonths()} Months
             </span>
             <h4
               style={{
@@ -2228,8 +2591,10 @@ export default function App() {
         minHeight: '100vh',
         overflowX: 'hidden',
         background: theme.bg,
+        position: 'relative',
       }}
     >
+      <GlobalBg3D />
       <InjectStyles />
       <Navbar />
 
