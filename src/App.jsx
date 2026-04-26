@@ -312,6 +312,7 @@ const globalCSS = `
     background: #fff;
     border-radius: 50%;
     animation: twinkle 3s infinite alternate ease-in-out;
+    will-change: opacity, transform;
   }
 
   .comet {
@@ -322,6 +323,7 @@ const globalCSS = `
     border-radius: 50%;
     box-shadow: 0 0 0 4px rgba(99,102,241,0.1), 0 0 0 8px rgba(139,92,246,0.1), 0 0 20px rgba(255,255,255,1);
     animation: animateComet 4s linear infinite;
+    will-change: transform;
   }
   .comet::before {
     content: '';
@@ -331,6 +333,19 @@ const globalCSS = `
     width: 250px;
     height: 1px;
     background: linear-gradient(90deg, rgba(255,255,255,0.8), rgba(99,102,241,0.5), transparent);
+  }
+
+  @media (max-width: 768px) {
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.1; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1); box-shadow: none; }
+    }
+    .comet {
+      box-shadow: 0 0 8px rgba(255,255,255,0.8);
+    }
+    .comet::before {
+      width: 120px;
+    }
   }
 
   .btn-shine {
@@ -744,28 +759,45 @@ const getTrainingMonths = () => {
 
 // ─── Sky Background (Stars + Comets) ─────────────────────────────────────────
 
-const STATIC_STARS = Array.from({ length: 150 }).map(() => ({
-  top: `${Math.random() * 100}%`,
-  left: `${Math.random() * 100}%`,
-  size: `${Math.random() * 2 + 1}px`,
-  delay: `${Math.random() * 5}s`,
-  duration: `${Math.random() * 3 + 2}s`
-}));
-
 const CometShower = () => {
+  const [stars, setStars] = useState([]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+
+    // Generate stars only once on mount, based on initial screen size
+    const count = window.innerWidth < 768 ? 40 : 150;
+    setStars(Array.from({ length: count }).map(() => ({
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      size: `${Math.random() * 2 + 1}px`,
+      delay: `${Math.random() * 5}s`,
+      duration: `${Math.random() * 3 + 2}s`
+    })));
+
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const comets = [
-    { top: '-10%', left: '110%', delay: '0s',   duration: '10s' },
-    { top: '20%',  left: '120%', delay: '2s',   duration: '13s' },
-    { top: '-20%', left: '80%',  delay: '5s',   duration: '11s' },
-    { top: '40%',  left: '130%', delay: '1.5s', duration: '8s'  },
-    { top: '-5%',  left: '100%', delay: '7s',   duration: '12s' },
-    { top: '10%',  left: '140%', delay: '9s',   duration: '9s'  },
-    { top: '30%',  left: '150%', delay: '3.5s', duration: '14s' },
+    { top: '-10%', left: '110%', delay: '0s', duration: '10s' },
+    { top: '20%', left: '120%', delay: '2s', duration: '13s' },
+    { top: '-20%', left: '80%', delay: '5s', duration: '11s' },
+    { top: '40%', left: '130%', delay: '1.5s', duration: '8s' },
+    { top: '-5%', left: '100%', delay: '7s', duration: '12s' },
+    { top: '10%', left: '140%', delay: '9s', duration: '9s' },
+    { top: '30%', left: '150%', delay: '3.5s', duration: '14s' },
   ];
+
+  const displayComets = isMobile ? comets.slice(0, 3) : comets;
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 1 }}>
-      {STATIC_STARS.map((s, i) => (
+      {stars.map((s, i) => (
         <div
           key={`star-${i}`}
           className="star"
@@ -779,7 +811,7 @@ const CometShower = () => {
           }}
         />
       ))}
-      {comets.map((c, i) => (
+      {displayComets.map((c, i) => (
         <div
           key={`comet-${i}`}
           className="comet"
@@ -1636,7 +1668,7 @@ function ProjectCard({ project: p, index: i }) {
               borderBottom: `1px solid ${p.color}20`,
             }}>
               <div style={{ display: 'flex', gap: '6px' }}>
-                {['#ff5f57','#febc2e','#28c840'].map(c => (
+                {['#ff5f57', '#febc2e', '#28c840'].map(c => (
                   <span key={c} style={{ width: '10px', height: '10px', borderRadius: '50%', background: c, display: 'inline-block' }} />
                 ))}
               </div>
